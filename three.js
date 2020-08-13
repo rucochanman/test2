@@ -9,8 +9,10 @@ function init() {
   ////////////////画面設定
 
   // サイズを指定
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  //const width = window.innerWidth;
+  //const height = window.innerHeight;
+  const width = 800;
+  const height = 400;
 
   // レンダラーを作成
   let renderer = new THREE.WebGLRenderer({
@@ -25,7 +27,7 @@ function init() {
   let scene = new THREE.Scene();
 
   // カメラを作成
-  let camera = new THREE.PerspectiveCamera(10, width / height, 1, 10);
+  let camera = new THREE.PerspectiveCamera(45, width / height, 1, 100);
   //const camera = new THREE.OrthographicCamera(-480, +480, 270, -270, 1, 1000);
   camera.position.set(0, 0, 0);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
