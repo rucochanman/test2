@@ -9,18 +9,17 @@ function init() {
   ////////////////画面設定
 
   // サイズを指定
-  const width = 800;
-  const height = 400;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
   // レンダラーを作成
-  var renderer = new THREE.WebGLRenderer({alpha:true, antialias: true });
+  let renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector('#myCanvas')
+      });
 
   renderer.setClearColor(new THREE.Color('grey'));//背景色の設定
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-
   document.body.appendChild( renderer.domElement );
-  //renderer.setSize(width, height);
+  renderer.setSize(width, height);
 
   // シーンを作成
   let scene = new THREE.Scene();
