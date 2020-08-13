@@ -19,7 +19,7 @@ function init() {
         canvas: document.querySelector('#myCanvas')
       });
 
-  renderer.setClearColor(new THREE.Color('green'));//背景色の設定
+  renderer.setClearColor(new THREE.Color('gray'));//背景色の設定
   document.body.appendChild( renderer.domElement );
   renderer.setSize(width, height);
 
