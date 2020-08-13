@@ -63,8 +63,6 @@ function init() {
   const RIGHT = true;
   const center2 = new THREE.Vector2();
   const center3 = new THREE.Vector3();
-
-  //pipe var
   let pipeRad = 0;
   let lowerPipePos = new THREE.Vector2();
 
