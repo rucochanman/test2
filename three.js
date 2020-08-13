@@ -13,13 +13,14 @@ function init() {
   const height = 400;
 
   // レンダラーを作成
-  let renderer = new THREE.WebGLRenderer({
-        canvas: document.querySelector('#myCanvas')
-      });
+  var renderer = new THREE.WebGLRenderer({alpha:true, antialias: true });
 
   renderer.setClearColor(new THREE.Color('grey'));//背景色の設定
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+
   document.body.appendChild( renderer.domElement );
-  renderer.setSize(width, height);
+  //renderer.setSize(width, height);
 
   // シーンを作成
   let scene = new THREE.Scene();
