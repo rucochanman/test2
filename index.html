@@ -11,11 +11,94 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
     <script src="three.js"></script>
   </head>
-
   <body>
     <canvas id="myCanvas"></canvas>
+    <div id="webgl"></div>
 
-    <!-- page content1 -->
+    <script id="vs" type="x-shader/x-vertex">
+        #include <common>
+        #include <bsdfs>
+        #include <lights_pars_begin>
+        varying vec2 vUv;
+        varying vec4 fragColor;
+        void main() {
+            vec4 tempFragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            vec4 pos = modelViewMatrix * vec4(position, 1.0);
+            vec3 norm = normalMatrix * normal;
+            for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
+              vec4 vertexToLight = normalize(vec4(directionalLights[i].direction, 1.0));
+              vec4 col = vec4(directionalLights[i].color, 1.0);
+              tempFragColor +=  col * max(dot(vertexToLight.xyz, norm), 0.0);
+            }
+            fragColor = tempFragColor;
+            vUv = uv;
+            gl_Position = projectionMatrix * pos;
+         }
+    </script>
+
+    <script id="fs_mono" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 fragColor;
+        uniform vec3 uColor1;
+        uniform float uAmbient;
+          void main() {
+          vec4 color = vec4(uColor1, 1.0);
+          float block = 1.3;
+          vec2 xy = -1.0*floor(sin(gl_FragCoord.xy/block));
+          float flag = 0.01;
+          if(xy.x==xy.y){flag = 0.0;}
+          float div = 0.15;
+          vec4 deffuse = floor((fragColor+flag)/div)*div+(div*0.5);
+          gl_FragColor = deffuse * color;
+        }
+    </script>
+
+    <script id="fs_bi" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec2 vUv;
+        varying vec4 fragColor;
+        uniform sampler2D uTexture;
+        uniform vec3 uColor1;
+        uniform vec3 uColor2;
+        uniform float uAmbient;
+        void main() {
+          vec3 texCol = texture2D( uTexture, vUv ).rgb;
+          vec4 color = vec4(
+            uColor1.r*texCol.r + uColor2.r*abs(texCol.r-1.0),
+            uColor1.g*texCol.g + uColor2.g*abs(texCol.g-1.0),
+            uColor1.b*texCol.b + uColor2.b*abs(texCol.b-1.0),
+            1.0
+          );
+          float block = 1.5;
+          vec2 xy = -1.0*floor(sin(gl_FragCoord.xy/block));
+          float flag = 0.01;
+          if(xy.x==xy.y){flag = -0.01;}
+          float div = 0.15;
+          vec4 deffuse = floor((fragColor+flag)/div)*div+(div*0.5);
+          gl_FragColor = deffuse * color;
+        }
+    </script>
+
+    <script id="fs_uv" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec2 vUv;
+        varying vec4 fragColor;
+        uniform sampler2D uTexture;
+        uniform vec3 uColor1;
+        uniform vec3 uColor2;
+        uniform float uAmbient;
+          void main() {
+          vec3 texCol = texture2D( uTexture, vUv ).rgb;
+          vec4 color = vec4(texCol, 1.0);
+          float block = 1.5;
+          vec2 xy = -1.0*floor(sin(gl_FragCoord.xy/block));
+          float flag = 0.01;
+          if(xy.x==xy.y){flag = -0.01;}
+          float div = 0.15;
+          vec4 deffuse = floor((fragColor+flag)/div)*div+(div*0.5);
+          gl_FragColor = deffuse * color;
+        }
+    </script>
+    
   </body>
-
 </html>
