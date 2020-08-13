@@ -20,8 +20,6 @@ function init() {
   renderer.setClearColor(new THREE.Color('green'));//背景色の設定
   document.body.appendChild( renderer.domElement );
   renderer.setSize(width, height);
-  console.log(width);
-  console.log(height);
 
   // シーンを作成
   let scene = new THREE.Scene();
@@ -36,6 +34,10 @@ function init() {
   const envlight = new THREE.AmbientLight(0xffffff, ambLight);
   scene.add(envlight);
 
+  var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+  var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+  var cube = new THREE.Mesh( geometry, material );
+  scene.add( cube );
 
   function sceneUpdate(){
     requestAnimationFrame( sceneUpdate );
