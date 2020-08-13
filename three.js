@@ -35,13 +35,12 @@ function init() {
   scene.add(envlight);
 
 
-  sceneUpdate();
-
   function sceneUpdate(){
     requestAnimationFrame( sceneUpdate );
     //animate(cr, moves1, 40);
     renderer.render( scene, camera );
   }
 
+  sceneUpdate();
 
 }
