@@ -39,9 +39,9 @@ function init() {
 
 
   //test用
-  var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-  var material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
-  var cube = new THREE.Mesh( geometry, material );
+  var test_geometry = new THREE.BoxGeometry( 1, 1, 1 );
+  var test_material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
+  var cube = new THREE.Mesh( test_geometry, test_material );
   cube.position.set(0, 0, 0);
   cube.rotation.x = 0.5;
   cube.rotation.z = 0.5;
@@ -98,7 +98,6 @@ function init() {
   let bodyWidths = new Array(bodyNode);
   let bodyThicks = new Array(bodyNode);
 
-  /*
   //material
   const loader = new THREE.TextureLoader();
   const vert = document.getElementById('vs').textContent;
@@ -127,7 +126,7 @@ function init() {
   monoMat.fragmentShader = mono_frag;
   let uvMat = material.clone();
   uvMat.fragmentShader = bi_frag;
-  */
+
 
 
   //////////////////////////////////////////////////////////////////////////////////
