@@ -11,7 +11,7 @@ function init() {
   // サイズを指定
   //const width = window.innerWidth;
   //const height = window.innerHeight;
-  const width = 400;
+  const width = 800;
   const height = 600;
 
   // レンダラーを作成
@@ -27,7 +27,7 @@ function init() {
   let scene = new THREE.Scene();
 
   // カメラを作成
-  let camera = new THREE.PerspectiveCamera(45, width / height, 1, 100);
+  let camera = new THREE.PerspectiveCamera(45, width / height, 1, 10);
   //const camera = new THREE.OrthographicCamera(-480, +480, 270, -270, 1, 1000);
   camera.position.set(0, 0, 0);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -37,7 +37,7 @@ function init() {
   scene.add(envlight);
 
   var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-  var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+  var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
   var cube = new THREE.Mesh( geometry, material );
   scene.add( cube );
 
