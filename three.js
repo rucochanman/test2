@@ -126,6 +126,252 @@ function init() {
   uvMat.fragmentShader = bi_frag;
 
 
+
+
+  //////////////////////////////////////////////////////////////////////////////////
+  //		inits
+  //////////////////////////////////////////////////////////////////////////////////
+
+  //make_crowley
+  let anon_col = {
+    skinCol: new THREE.Color(0xefa083),
+    hairCol: new THREE.Color(0x8b0000),
+    eyeCol: new THREE.Color(0xcfb000),
+    highCol: new THREE.Color(0x38180f),
+    bodyCol: new THREE.Color(0x111111)
+  };
+
+  let anon_tex = {
+    eyeTex1: 'img/eye_open.png',
+    eyeTex2: 'img/eye_close.png',
+    headTex: 'img/hair.png'
+  };
+
+  let anon = new Anon(anon_col, anon_tex);
+  anon.init();
+
+
+
+
+  function model_init(col, tex){
+    //animation_param
+    this.time = 0;
+    this.a_index = 0;
+    this.a_count = 0;
+    this.pos_x = 0;
+    this.pos_y = 0;
+    this.pos_z = 0;
+    this.rot_x = 0;
+    this.rot_y = 0;
+    this.rot_z = 0;
+    this.head_lr = 0;
+    this.head_fb = 0;
+    this.head_tw = 0;
+    this.body_lr = 0;
+    this.body_fb = 0;
+    this.body_tw = 0;
+    this.armL_b1 = 0;
+    this.armL_b2 = 0;
+    this.armL_r1 = 0;
+    this.armL_r2 = 0;
+    this.armR_b1 = 0;
+    this.armR_b2 = 0;
+    this.armR_r1 = 0;
+    this.armR_r2 = 0;
+    this.footL_b1 = 0;
+    this.footL_b2 = 0;
+    this.footL_b3 = 0;
+    this.footL_r1 = 0;
+    this.footL_r2 = 0;
+    this.footL_r3 = 0;
+    this.footR_b1 = 0;
+    this.footR_b2 = 0;
+    this.footR_b3 = 0;
+    this.footR_r1 = 0;
+    this.footR_r2 = 0;
+    this.footR_r3 = 0;
+    this.blink = 1;
+    //colors
+    this.skinCol = col.skinCol;
+    this.bodyCol = col.bodyCol;
+    this.eyeCol = col.eyeCol;
+    this.highCol = col.highCol;
+    this.hairCol = col.hairCol;
+    //material
+    this.skinMat = monoMat.clone();
+    this.skinMat.uniforms.uColor1.value = this.skinCol;
+    this.bodyMat = monoMat.clone();
+    this.bodyMat.uniforms.uColor1.value = this.bodyCol;
+    this.hairMat = monoMat.clone();
+    this.hairMat.uniforms.uColor1.value = this.hairCol;
+    this.torsoMat = monoMat.clone();
+    this.torsoMat.uniforms.uColor1.value = this.bodyCol;
+    this.headMat = uvMat.clone();
+    this.headTex = loader.load(tex.headTex);
+    this.headMat.uniforms.uColor1.value = this.skinCol;
+    this.headMat.uniforms.uColor2.value = this.hairCol;
+    this.headMat.uniforms.uTexture.value = this.headTex;
+    this.eyeMat = uvMat.clone();
+    this.eyeTex1 = loader.load(tex.eyeTex1); //eye_open
+    this.eyeTex2 = loader.load(tex.eyeTex2); //eye_close
+    this.eyeMat.uniforms.uColor1.value = this.highCol;
+    this.eyeMat.uniforms.uColor2.value = this.eyeCol;
+    this.eyeMat.uniforms.uTexture.value = this.eyeTex1;
+    this.lineMat = new THREE.LineBasicMaterial({
+      color: 0x000000, linewidth: line_width});
+    //geometry
+    this.upperArmGeoL;
+    this.upperArmGeoR;
+    this.elbowGeoL;
+    this.elbowGeoR;
+    this.lowerArmGeoL;
+    this.lowerArmGeoR;
+    this.upperFootGeoL;
+    this.upperFootGeoR;
+    this.kneeGeoL;
+    this.kneeGeoR;
+    this.ankleGeoL;
+    this.ankleGeoR;
+    this.lowerFootGeoL;
+    this.lowerFootGeoR;
+    this.bodyGeo;
+    //groups
+    this.bodyG = new THREE.Group();
+    this.headG = new THREE.Group();
+    this.elash = new THREE.Group();
+    this.handGL = new THREE.Group();
+    this.handGR = new THREE.Group();
+    this.elbowGL = new THREE.Group();
+    this.elbowGR = new THREE.Group();
+    this.lowerArmGL = new THREE.Group();
+    this.lowerArmGR = new THREE.Group();
+    this.armGL = new THREE.Group();
+    this.armGR = new THREE.Group();
+    this.armG = new THREE.Group();
+    this.toeGL = new THREE.Group();
+    this.toeGR = new THREE.Group();
+    this.kneeGL = new THREE.Group();
+    this.kneeGR = new THREE.Group();
+    this.lowerFootGL = new THREE.Group();
+    this.lowerFootGR = new THREE.Group();
+    this.footGL = new THREE.Group();
+    this.footGR = new THREE.Group();
+    this.footG = new THREE.Group();
+    this.toeObjL;
+    this.toeObjR;
+    //init
+    this.init = function(){
+      this.headInit();
+      armInit(this);
+      footInit(this);
+      bodyInit(this);
+      this.bodyG.scale.set(0.01,0.01,0.01);
+    }
+    //headInit
+    this.headInit = function(){
+      makeHead(this);
+      //makeEye(this);
+      makeEye2(this);
+      makeEar(this);
+      makeLines(this);
+      this.headG.rotation.x = PI/20;
+      this.bodyG.add(this.headG);
+    }
+  }
+
+  function armInit(model){
+    //defs
+    const node = pipeNode;
+    const edge = pipeEdge;
+    const hand_thick = armThick * Math.cos(PI/3.8);
+    const hand_width = armThick * Math.cos(PI/5);
+    const fing_thick = armThick / 4.5;
+    let handThick = new Array(pipeNode);
+    let handWidth= new Array(pipeNode);
+    let fingThick = new Array(pipeNode);
+    const numFing = 4;
+    //thick
+    for(let i=0; i<node; i++){
+        let t = i / (node-1);
+        upperArmThick[i] = armThick;
+        lowerArmThick[i] = armThick * Math.cos(Math.pow(t,2.5)*PI/3.8);
+        lowerArmWidth[i] = armThick * Math.cos(Math.pow(t,2.5)*PI/5);
+        handThick[i] = hand_thick * Math.cos(t*PI/3);
+        handWidth[i] = hand_width * Math.cos(t*PI/5);
+        fingThick[i] = fing_thick * Math.cos(t*PI/2.5);
+    }
+    //make hand obj
+    const hand_len = armLength / 5;
+    const hp = new THREE.Vector2( hand_len, 0 );
+    let hand_pt = makePipe(CLOSE, node, edge, hp, hp, handThick, handWidth);
+    let geoHand = makeGeometry(node+1, edge, hand_pt);
+    geoHand = mergeGeometry(geoHand);
+    let objHand = new THREE.Mesh(geoHand, model.skinMat);
+    model.handGL.add(objHand);
+    //make fingers obj
+    const fp = hp.multiplyScalar(0.85);
+    let fing_pt = makePipe(CLOSE, node, edge, fp, fp, fingThick, fingThick);
+    let geoFing = makeGeometry(node+1, edge, fing_pt);
+    geoFing = mergeGeometry(geoFing);
+    let obj_fing = new THREE.Mesh(geoFing, model.skinMat);
+    for(let i=0; i<numFing; i++){
+      let obj = obj_fing.clone();
+      let angle = [-PI/6, -PI/18, PI/16, PI/5];
+      let z = hand_len/0.7 * Math.sin(angle[i]);
+      let x = hand_len/1.1 * Math.cos(angle[i]);
+      let pos = new THREE.Vector3(x, 0, z);
+      obj.rotation.y = -angle[i];
+      obj.position.set(pos.x, pos.y, pos.z);
+      model.handGL.add(obj);
+    }
+    model.handGR = model.handGL.clone();
+    //meke upper arm
+    let ep = new THREE.Vector2( armLength,0 );
+    let arm_pt = makePipe(OPEN, node, edge, ep, ep, upperArmThick, upperArmThick);
+    let arm_geo = makeGeometry(node, edge, arm_pt);
+    arm_geo = mergeGeometry(arm_geo);
+    model.upperArmGeoL = arm_geo.clone();
+    model.upperArmGeoR = arm_geo.clone();
+    model.lowerArmGeoL = arm_geo.clone();
+    model.lowerArmGeoR = arm_geo.clone();
+    let uarm_objL = new THREE.Mesh(model.upperArmGeoL, model.bodyMat);
+    let uarm_objR = new THREE.Mesh(model.upperArmGeoR, model.bodyMat);
+    let larm_objL = new THREE.Mesh(model.lowerArmGeoL, model.bodyMat);
+    let larm_objR = new THREE.Mesh(model.lowerArmGeoR, model.bodyMat);
+    //make joint
+    let elbow_pt = makeJoint(node, edge, upperArmThick, -PI/100);
+    let elbow_geo = makeGeometry(node, edge, elbow_pt);
+    elbow_geo = mergeGeometry(elbow_geo);
+    model.elbowGeoL = elbow_geo.clone();
+    model.elbowGeoR = elbow_geo.clone();
+    let elbow_objL = new THREE.Mesh(model.elbowGeoL, model.bodyMat);
+    let elbow_objR = new THREE.Mesh(model.elbowGeoR, model.bodyMat);
+    //Grouping-L
+    model.armGL.add(uarm_objL);
+    model.lowerArmGL.add(larm_objL);
+    model.lowerArmGL.add(model.handGL);
+    model.elbowGL.add(elbow_objL);
+    model.elbowGL.add(model.lowerArmGL);
+    model.armGL.add(model.elbowGL);
+    //Grouping-R
+    model.armGR.add(uarm_objR);
+    model.lowerArmGR.add(larm_objR);
+    model.lowerArmGR.add(model.handGR);
+    model.elbowGR.add(elbow_objR);
+    model.elbowGR.add(model.lowerArmGR);
+    model.armGR.add(model.elbowGR);
+    //Grouping-LR
+    model.armG.add(model.armGR);
+    model.armG.add(model.armGL);
+    model.bodyG.add(model.armG);
+    scene.add(model.bodyG);
+  }
+
+
+
+
+
+
   //////////////////////////////////////////////////////////////////////////////////
   //		common - functions
   //////////////////////////////////////////////////////////////////////////////////
@@ -279,7 +525,6 @@ function init() {
     }
     return indices;
   }
-
 
   ////////culc_help
 
