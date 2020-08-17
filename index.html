@@ -11,10 +11,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
     <script src="three.js"></script>
   </head>
+
   <body>
     <canvas id="myCanvas"></canvas>
     <div id="webgl"></div>
-
+    <!-- common-vs -->
     <script id="vs" type="x-shader/x-vertex">
         #include <common>
         #include <bsdfs>
@@ -36,6 +37,7 @@
          }
     </script>
 
+    <!-- fs-mono -->
     <script id="fs_mono" type="x-shader/x-fragment">
         precision mediump float;
         varying vec4 fragColor;
@@ -53,6 +55,7 @@
         }
     </script>
 
+    <!-- fs-bi-color -->
     <script id="fs_bi" type="x-shader/x-fragment">
         precision mediump float;
         varying vec2 vUv;
