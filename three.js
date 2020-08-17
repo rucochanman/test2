@@ -9,49 +9,29 @@ function init() {
   // 画面サイズを指定
   const width = window.innerWidth;
   const height = window.innerHeight;
-
   // レンダラー 背景色の設定
   let renderer = new THREE.WebGLRenderer({　canvas: document.querySelector('#myCanvas')　});
   renderer.setClearColor(new THREE.Color('grey'));
   document.body.appendChild( renderer.domElement );
   renderer.setSize(width, height);
-
   // シーンを作成
   let scene = new THREE.Scene();
-
   // カメラを作成
   let camera = new THREE.PerspectiveCamera(15, width / height, 1, 1000);
-  camera.position.set(0, 0, 10);
+  camera.position.set(0, 0, 1000);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
-
   // ライトの設置
-  //let ambLight = 1;
-  //const envlight = new THREE.AmbientLight(0xffffff, ambLight);
-  //scene.add(envlight);
-
+  let ambLight = 1;
+  const envlight = new THREE.AmbientLight(0xffffff, ambLight);
+  scene.add(envlight);
   var directionalLight = new THREE.DirectionalLight('#ffffff', 1);
-  directionalLight.position.set(10, 10, 0);
+  directionalLight.position.set(10, 5, 10);
   scene.add(directionalLight);
-
-
-
-
-
-
-  //test用
-  var test_geometry = new THREE.BoxGeometry( 1, 1, 1 );
-  var test_material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
-  var cube = new THREE.Mesh( test_geometry, test_material );
-  cube.position.set(0, 0, 0);
-  cube.rotation.x = 0.5;
-  cube.rotation.z = 0.5;
-  scene.add( cube );
 
 
   //////////////////////////////////////////////////////////////////////////////////
   //		defs
   //////////////////////////////////////////////////////////////////////////////////
-
 
   //common-def
   const NUM_POS = 3;
@@ -65,7 +45,6 @@ function init() {
   const center3 = new THREE.Vector3();
   let pipeRad = 0;
   let lowerPipePos = new THREE.Vector2();
-
   //resolusion
   const reso = 3; //解像度の変更
   const headNode = 8 * reso;
@@ -74,7 +53,6 @@ function init() {
   const pipeNode = 4 * reso;
   const bodyNode = 4 * reso;
   const bodyEdge = 4 * reso;
-
   //size
   const wScale = 100; //サイズの変更
   const armLength = wScale / 9;
@@ -95,14 +73,12 @@ function init() {
   let ankleThick = new Array(pipeNode);
   let bodyWidths = new Array(bodyNode);
   let bodyThicks = new Array(bodyNode);
-
   //material
   const loader = new THREE.TextureLoader();
   const vert = document.getElementById('vs').textContent;
   const mono_frag = document.getElementById('fs_mono').textContent;
   const uv_frag = document.getElementById('fs_uv').textContent;
   const bi_frag = document.getElementById('fs_bi').textContent;
-
   let uniform = THREE.UniformsUtils.merge([
     THREE.UniformsLib['lights'],{
     'uTexture': { value: null },
@@ -111,7 +87,6 @@ function init() {
     'uColor2': { value: null }
     }
   ] );
-
   let material = new THREE.ShaderMaterial({
     side:THREE.DoubleSide,
     uniforms: uniform,
@@ -119,7 +94,6 @@ function init() {
     fragmentShader: null,
     lights: true
   });
-
   let monoMat = material.clone();
   monoMat.fragmentShader = mono_frag;
   let uvMat = material.clone();
@@ -129,30 +103,28 @@ function init() {
 
 
   //////////////////////////////////////////////////////////////////////////////////
-  //		inits
+  //		model_init
   //////////////////////////////////////////////////////////////////////////////////
 
-  //make_crowley
+  //model_settings
   let anon_col = {
     skinCol: new THREE.Color(0xefa083),
     hairCol: new THREE.Color(0x8b0000),
     eyeCol: new THREE.Color(0xcfb000),
     highCol: new THREE.Color(0x38180f),
-    bodyCol: new THREE.Color(0x111111)
+    bodyCol: new THREE.Color(0xff0000)
   };
-
   let anon_tex = {
     eyeTex1: 'img/eye_open.png',
     eyeTex2: 'img/eye_close.png',
     headTex: 'img/hair.png'
   };
-
-  let anon = new Anon(anon_col, anon_tex);
+  let anon = new model_init(anon_col, anon_tex);
   anon.init();
+  armUpdate(anon, LEFT, 0.0,0,0,0);
+  armUpdate(anon, RIGHT, 0,0,0,0);
 
-
-
-
+  //model_init
   function model_init(col, tex){
     //animation_param
     this.time = 0;
@@ -263,21 +235,27 @@ function init() {
     this.init = function(){
       this.headInit();
       armInit(this);
-      footInit(this);
-      bodyInit(this);
-      this.bodyG.scale.set(0.01,0.01,0.01);
+      //footInit(this);
+      //bodyInit(this);
+      //this.bodyG.scale.set(0.01,0.01,0.01);
     }
     //headInit
     this.headInit = function(){
-      makeHead(this);
-      //makeEye(this);
-      makeEye2(this);
-      makeEar(this);
-      makeLines(this);
-      this.headG.rotation.x = PI/20;
+      //makeHead(this);
+      //makeEye2(this);
+      //makeEar(this);
+      //makeLines(this);
+      //this.headG.rotation.x = PI/20;
       this.bodyG.add(this.headG);
     }
   }
+
+
+
+
+
+
+
 
   function armInit(model){
     //defs
@@ -372,6 +350,56 @@ function init() {
 
 
 
+  function armUpdate( model, side, v1, v2, rot1, rot2){
+    //clear
+    lowerPipePos.set(0,0);
+    pipeRad = 0;
+    //defs
+    let node = pipeNode;
+    let edge = pipeEdge;
+    //value mapping
+    const bend1 = mapping(v1, -1.0, 2.0, PI/4, -PI/2);
+    const bend2 = mapping(v2, 0.0, 1.5, -0.01, -3*PI/4);
+    let {ep1, cp1, ep2, cp2} = getBezierPt(armLength, armLength2, bend1, bend2);
+    let upper_geo = side ? model.upperArmGeoR : model.upperArmGeoL;
+    let joint_geo = side ? model.elbowGeoR : model.elbowGeoL;
+    let lower_geo = side ? model.lowerArmGeoR : model.lowerArmGeoL;
+    let hand = side ? model.handGR : model.handGL;
+    let joint = side ? model.elbowGR : model.elbowGL;
+    let lower_arm = side ? model.lowerArmGR : model.lowerArmGL;
+    let arm = side ? model.armGR : model.armGL;
+    let rot = side ? PI : 0;
+    //arm_geoUpdate
+    let upper_pt = makePipe(OPEN, node, edge, ep1, cp1, upperArmThick, upperArmThick);
+    updateGeometry(node, edge, upper_pt, upper_geo);
+    let upper_rad = pipeRad;
+    let joint_pt = makeJoint(node, edge, upperArmThick, bend2);
+    updateGeometry(node, edge, joint_pt, joint_geo);
+    joint.position.set(ep1.x, ep1.y, 0);
+    let lower_pt = makePipe(OPEN, node, edge, ep2, cp2, lowerArmThick, lowerArmWidth);
+    updateGeometry(node, edge, lower_pt, lower_geo);
+    lower_arm.position.set(lowerPipePos.x,lowerPipePos.y,0);
+    //hand
+    hand.position.set(ep2.x, ep2.y, 0);
+    hand.rotation.z = pipeRad;
+    //rotation
+    joint.quaternion.set(0,0,0,1);
+    arm.quaternion.set(0,0,0,1);
+    let axis1 = new THREE.Vector3(1,0,0);
+    let x = Math.cos(upper_rad);
+    let y = Math.sin(upper_rad);
+    let axis2 = new THREE.Vector3(x,y,0).normalize();
+    let q1 = new THREE.Quaternion();
+    let q2 = new THREE.Quaternion();
+    q1.setFromAxisAngle(axis1,rot1);
+    q2.setFromAxisAngle(axis2,rot2);
+    joint.quaternion.multiply(q2);
+    arm.quaternion.multiply(q1);
+    arm.rotation.y = rot;
+  }
+
+
+
   //////////////////////////////////////////////////////////////////////////////////
   //		common - functions
   //////////////////////////////////////////////////////////////////////////////////
@@ -449,7 +477,7 @@ function init() {
   }
 
   ////////make geometry
-
+  
   function updateGeometry(node, edge, pt, geometry){
     let vertices = setVertices(node, edge, pt);
     let geo_new = new THREE.BufferGeometry();
